@@ -1,0 +1,8 @@
+train: D:/rice_yolo/finally/rice.v4i.yolov11/train/images  # train images (relative to 'path') 128 images
+val: D:/rice_yolo/finally/rice.v4i.yolov11/val/images  # val images (relative to 'path') 128 images
+test: D:/rice_yolo/finally/rice.v4i.yolov11/test/images
+
+nc: 3
+ 
+# Classes, 'blight'
+names: ['Blight', 'Brown_Spot', 'Blast']

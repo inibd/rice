@@ -1,0 +1,1 @@
+现在写一个使用yolov11的水稻病害精准检测系统用来检测白叶枯病、褐斑病、稻瘟病对应标签是Blight、Brown_Spot、Blast。现在我想要使用flutter与flask相结合的办法，用flutter开发app，使用flask后端，我有自己的域名rice.1111.xyz。怎么搞
