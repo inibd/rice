@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>水稻病害检测系统</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-box {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #preview, #result {
+            max-width: 100%;
+            margin-top: 20px;
+        }
+        .result-container {
+            margin-top: 30px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>水稻病害检测系统</h1>
+
+    <div class="upload-box">
+        <h3>上传水稻叶片图片</h3>
+        <input type="file" id="fileInput" accept="image/*">
+        <button onclick="uploadFile()">开始检测</button>
+    </div>
+
+    <div class="loading" id="loading">
+        <p>正在分析中，请稍候...</p>
+    </div>
+
+    <div class="image-container">
+        <h3>原始图片</h3>
+        <img id="preview" style="display: none;">
+    </div>
+
+    <div class="result-container">
+        <h3>检测结果</h3>
+        <img id="result" style="display: none;">
+        <div id="detectionResults"></div>
+    </div>
+
+    <script>
+        // 预览上传的图片
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('preview');
+                    preview.src = event.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 上传文件并获取检测结果
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('请先选择图片文件！');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/detect', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+
+                if (data.status === 'success') {
+                    // 显示结果图片
+                    const resultImg = document.getElementById('result');
+                    resultImg.src = data.result_image;
+                    resultImg.style.display = 'block';
+
+                    // 显示检测结果详情
+                    const resultsDiv = document.getElementById('detectionResults');
+                    resultsDiv.innerHTML = `
+                        <h4>检测到 ${data.result.count} 处病害</h4>
+                        <ul>
+                            ${data.result.detections.map(det => `
+                                <li>${det.class_name} (置信度: ${(det.confidence * 100).toFixed(2)}%)</li>
+                            `).join('')}
+                        </ul>
+                    `;
+                } else {
+                    alert('检测失败: ' + data.error);
+                }
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                console.error('Error:', error);
+                alert('请求失败，请检查控制台日志');
+            });
+        }
+    </script>
+</body>
+</html>
